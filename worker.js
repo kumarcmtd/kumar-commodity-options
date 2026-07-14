@@ -55,7 +55,7 @@ async function getToken(env) {
 }
 
 async function searchInstruments(token, query, params) {
-  const usp = new URLSearchParams({ query, exchanges: "MCX", records: "30", ...params });
+  const usp = new URLSearchParams({ query, exchanges: "MCX_FO", records: "30", ...params });
   const res = await fetch(`${UPSTOX_SEARCH_URL}?${usp.toString()}`, {
     headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
   });
@@ -298,7 +298,7 @@ a{display:inline-block;margin-top:20px;background:linear-gradient(135deg,#f59e0b
 <p>Crude Oil & Natural Gas - Options Analyst</p>
 <a href="/login">Login with Upstox</a>
 </div></body></html>`;
-}
+  }
 function dashboardHtml() {
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
