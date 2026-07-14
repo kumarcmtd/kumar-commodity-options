@@ -1,6 +1,4 @@
-// ============================================================
 // KUMAR COMMODITY OPTIONS — Crude Oil & Natural Gas Options Analyst
-// ============================================================
 
 const UPSTOX_AUTH_URL = "https://api.upstox.com/v2/login/authorization/dialog";
 const UPSTOX_TOKEN_URL = "https://api.upstox.com/v2/login/authorization/token";
@@ -301,7 +299,6 @@ a{display:inline-block;margin-top:20px;background:linear-gradient(135deg,#f59e0b
 <a href="/login">Login with Upstox</a>
 </div></body></html>`;
 }
-
 function dashboardHtml() {
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -358,7 +355,6 @@ async function load() {
       html += '<div class="symbol">' + sym + '</div>';
       html += '<div class="badge ' + d.trend + '">' + d.trend + '</div>';
       html += '<div class="badge ' + (d.confidence >= 70 ? 'conf-high' : 'conf-low') + '">Confidence: ' + d.confidence + '%</div>';
-
       html += '<div class="sec"><div class="sec-title">Option Chain Analysis</div>';
       html += '<div class="row"><span>PCR (Put/Call OI)</span><b>' + (d.pcr != null ? d.pcr : 'N/A') + '</b></div>';
       html += '<div class="row"><span>Total Call OI</span><span>' + d.total_call_oi.toLocaleString() + '</span></div>';
@@ -366,15 +362,10 @@ async function load() {
       html += '<div class="row"><span>Max Pain Strike</span><b>' + (d.max_pain != null ? d.max_pain : 'N/A') + '</b></div>';
       if (d.oi_note) html += '<div class="row" style="font-size:0.78rem;color:#64748b">' + d.oi_note + '</div>';
       html += '</div>';
-
       html += '<div class="sec"><div class="sec-title">Greeks / IV</div>';
-      if (d.greeks) {
-        html += '<div class="row"><span>IV</span><span>' + d.greeks.iv + '</span></div>';
-      } else {
-        html += '<div class="na">Not available via API for MCX options</div>';
-      }
+      if (d.greeks) { html += '<div class="row"><span>IV</span><span>' + d.greeks.iv + '</span></div>'; }
+      else { html += '<div class="na">Not available via API for MCX options</div>'; }
       html += '</div>';
-
       if (d.strategy !== 'NO TRADE' && d.recommendation) {
         var r = d.recommendation;
         html += '<div class="rec-box">';
@@ -389,16 +380,13 @@ async function load() {
       } else {
         html += '<div class="notrade">NO TRADE - confidence below 70% threshold or no clear trend.</div>';
       }
-
       html += '<div class="sec"><div class="sec-title">Reasons</div><ul class="reasons">';
       for (var j = 0; j < d.confidence_reasons.length; j++) html += '<li>' + d.confidence_reasons[j] + '</li>';
       html += '</ul></div>';
-
       if (d.strikes && d.strikes.length) {
         html += '<div class="sec"><div class="sec-title">Nearby Strikes (LTP / OI)</div>';
         html += '<table class="strike-table"><tr><th>Strike</th><th>CE LTP/OI</th><th>PE LTP/OI</th></tr>';
-        for (var k = 0; k < d.strikes.length; k+
-        +) {
+        for (var k = 0; k < d.strikes.length; k++) {
           var s = d.strikes[k];
           var ceTxt = s.ce ? (s.ce.ltp != null ? s.ce.ltp : '-') + ' / ' + (s.ce.oi != null ? s.ce.oi : '-') : '-';
           var peTxt = s.pe ? (s.pe.ltp != null ? s.pe.ltp : '-') + ' / ' + (s.pe.oi != null ? s.pe.oi : '-') : '-';
@@ -406,7 +394,6 @@ async function load() {
         }
         html += '</table></div>';
       }
-
       html += '</div>';
     }
     app.innerHTML = html;
