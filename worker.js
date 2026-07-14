@@ -1,7 +1,5 @@
-// deploy trigger
 // ============================================================
 // KUMAR COMMODITY OPTIONS — Crude Oil & Natural Gas Options Analyst
-// (v3: uses Upstox Instrument Search API — no bulk file download)
 // ============================================================
 
 const UPSTOX_AUTH_URL = "https://api.upstox.com/v2/login/authorization/dialog";
@@ -398,28 +396,5 @@ async function load() {
 
       if (d.strikes && d.strikes.length) {
         html += '<div class="sec"><div class="sec-title">Nearby Strikes (LTP / OI)</div>';
-        html += '<table class="strike-table"><tr><th>Strike</th><th>CE LTP/OI</th><th>PE 
-html += '<table class="strike-table"><tr><th>Strike</th><th>CE LTP/OI</th><th>PE LTP/OI</th></tr>';
-      for (var k = 0; k < d.strikes.length; k++) {
-        var s = d.strikes[k];
-        var ceTxt = s.ce ? (s.ce.ltp != null ? s.ce.ltp : '-') + ' / ' + (s.ce.oi != null ? s.ce.oi : '-') : '-';
-        var peTxt = s.pe ? (s.pe.ltp != null ? s.pe.ltp : '-') + ' / ' + (s.pe.oi != null ? s.pe.oi : '-') : '-';
-        html += '<tr><td>' + s.strike + '</td><td class="CE">' + ceTxt + '</td><td class="PE">' + peTxt + '</td></tr>';
-      }
-      html += '</table></div>';
-      }
-
-      html += '</div>';
-    }
-
-    app.innerHTML = html;
-    document.getElementById('ts').innerText = 'Last updated: ' + new Date().toLocaleTimeString();
-  } catch (e) {
-    app.innerHTML = '<div class="card err">Error loading data: ' + e.message + '</div>';
-  }
-}
-load();
-setInterval(load, 30000);
-</script>
-</body></html>`;
-}
+        html += '<table class="strike-table"><tr><th>Strike</th><th>CE LTP/OI</th><th>PE LTP/OI</th></tr>';
+        for (var k = 0; k < d.strikes.length; k+
