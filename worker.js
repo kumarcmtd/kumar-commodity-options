@@ -1,3 +1,4 @@
+// deploy trigger
 // ============================================================
 // KUMAR COMMODITY OPTIONS — Crude Oil & Natural Gas Options Analyst
 // (v3: uses Upstox Instrument Search API — no bulk file download)
