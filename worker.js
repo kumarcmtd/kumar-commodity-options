@@ -44,7 +44,7 @@ export default {
         if (!token) token = env.UPSTOX_ACCESS_TOKEN;
         if (!token) {
           return new Response(
-            '<a href="/login">Login with Upstox</a> or set one via /set-token?token=YOUR_TOKEN',
+            '<a href="/login">Login with Upstox</a> (do this each morning) or set one via /set-token?token=YOUR_TOKEN',
             { headers: { "Content-Type": "text/html" } }
           );
         }
@@ -52,12 +52,36 @@ export default {
         const results = {};
         for (const q of ["CRUDEOIL", "NATURALGAS"]) {
           const usp = new URLSearchParams({ query: q, exchanges: "MCX", instrument_types: "FUT", records: "10" });
-          const res = await fetch(`${UPSTOX_SEARCH_URL}?${usp.toString()}`, {
+          const searchRes = await fetch(`${UPSTOX_SEARCH_URL}?${usp.toString()}`, {
             headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
           });
-          const j = await res.json();
-          results[q] = j;
+          const searchJson = await searchRes.json();
+
+          if (searchJson.status !== "success" || !searchJson.data || !searchJson.data.length) {
+            results[q] = { search: searchJson };
+            continue;
+          }
+
+          const contracts = [...searchJson.data].sort(
+            (a, b) => new Date(a.expiry) - new Date(b.expiry)
+          );
+          const nearest = contracts[0];
+          const instrumentKey = nearest.instrument_key;
+
+          const quoteUsp = new URLSearchParams({ instrument_key: instrumentKey });
+          const quoteRes = await fetch(`${UPSTOX_QUOTES_URL}?${quoteUsp.toString()}`, {
+            headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+          });
+          const quoteJson = await quoteRes.json();
+
+          results[q] = {
+            instrument_key: instrumentKey,
+            expiry: nearest.expiry,
+            trading_symbol: nearest.trading_symbol,
+            quote: quoteJson,
+          };
         }
+
         return new Response(JSON.stringify(results, null, 2), { headers: { "Content-Type": "application/json" } });
       }
 
