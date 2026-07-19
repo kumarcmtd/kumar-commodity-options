@@ -12,6 +12,7 @@ export default {
         const authUrl = `${UPSTOX_AUTH_URL}?response_type=code&client_id=${env.UPSTOX_API_KEY}&redirect_uri=${encodeURIComponent(redirectUri)}`;
         return Response.redirect(authUrl, 302);
       }
+
       if (url.pathname === "/callback") {
         const code = url.searchParams.get("code");
         if (!code) return new Response("No code", { status: 400 });
@@ -30,9 +31,23 @@ export default {
         await env.COMMODITY_KV.put("access_token", data.access_token);
         return Response.redirect(url.origin + "/", 302);
       }
+
+      if (url.pathname === "/set-token") {
+        const token = url.searchParams.get("token");
+        if (!token) return new Response("Provide ?token=", { status: 400 });
+        await env.COMMODITY_KV.put("access_token", token);
+        return new Response("Token saved to KV. Visit / to test.", { status: 200 });
+      }
+
       if (url.pathname === "/") {
-        const token = await env.COMMODITY_KV.get("access_token");
-        if (!token) return new Response('<a href="/login">Login with Upstox</a>', { headers: { "Content-Type": "text/html" } });
+        let token = await env.COMMODITY_KV.get("access_token");
+        if (!token) token = env.UPSTOX_ACCESS_TOKEN;
+        if (!token) {
+          return new Response(
+            '<a href="/login">Login with Upstox</a> or set one via /set-token?token=YOUR_TOKEN',
+            { headers: { "Content-Type": "text/html" } }
+          );
+        }
 
         const results = {};
         for (const q of ["CRUDEOIL", "NATURALGAS"]) {
@@ -45,6 +60,7 @@ export default {
         }
         return new Response(JSON.stringify(results, null, 2), { headers: { "Content-Type": "application/json" } });
       }
+
       return new Response("Not found", { status: 404 });
     } catch (err) {
       return new Response("Error: " + err.message, { status: 500 });
