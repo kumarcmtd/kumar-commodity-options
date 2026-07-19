@@ -3,32 +3,55 @@ const UPSTOX_QUOTES_URL = "https://api.upstox.com/v2/market-quote/quotes";
 const UPSTOX_AUTH_URL = "https://api.upstox.com/v2/login/authorization/dialog";
 const UPSTOX_TOKEN_URL = "https://api.upstox.com/v2/login/authorization/token";
 
+const THEME = {
+  CRUDEOIL: { grad: "linear-gradient(135deg,#ff8a00,#e52e71)", light: "#fff4e8" },
+  NATURALGAS: { grad: "linear-gradient(135deg,#00c6ff,#0072ff)", light: "#e8f6ff" },
+};
+
 function renderHTML(results) {
-  let cards = "";
-  for (const q of Object.keys(results)) {
+  const keys = Object.keys(results);
+  let tabButtons = "";
+  let panels = "";
+
+  keys.forEach((q, i) => {
     const r = results[q];
+    const theme = THEME[q] || { grad: "linear-gradient(135deg,#999,#666)", light: "#f2f2f2" };
+    const active = i === 0 ? "active" : "";
+
+    tabButtons += `<button class="tab ${active}" style="background:${theme.grad}" onclick="showTab('${q}')" id="btn-${q}">${q}</button>`;
+
     if (!r.quote || r.quote.status !== "success") {
-      cards += `<div class="card"><h2>${q}</h2><p class="err">No data / login needed</p></div>`;
-      continue;
+      panels += `<div class="panel ${active}" id="panel-${q}"><p class="err">No data / login needed</p></div>`;
+      return;
     }
     const dataKey = Object.keys(r.quote.data)[0];
     const d = r.quote.data[dataKey];
-    const changeColor = d.net_change >= 0 ? "green" : "red";
-    cards += `
-      <div class="card">
-        <h2>${q}</h2>
-        <p class="symbol">${r.trading_symbol} &middot; Expiry ${r.expiry}</p>
-        <p class="ltp">₹${d.last_price} <span class="${changeColor}">(${d.net_change >= 0 ? "+" : ""}${d.net_change})</span></p>
-        <table>
-          <tr><td>Open</td><td>${d.ohlc.open}</td><td>High</td><td>${d.ohlc.high}</td></tr>
-          <tr><td>Low</td><td>${d.ohlc.low}</td><td>Close</td><td>${d.ohlc.close}</td></tr>
-          <tr><td>Volume</td><td>${d.volume}</td><td>OI</td><td>${d.oi}</td></tr>
-          <tr><td>Avg Price</td><td>${d.average_price}</td><td>OI Day High</td><td>${d.oi_day_high}</td></tr>
-          <tr><td>Lower Ckt</td><td>${d.lower_circuit_limit}</td><td>Upper Ckt</td><td>${d.upper_circuit_limit}</td></tr>
-        </table>
+    const up = d.net_change >= 0;
+    const changeColor = up ? "#0a9d3f" : "#e0263f";
+    const arrow = up ? "▲" : "▼";
+
+    panels += `
+      <div class="panel ${active}" id="panel-${q}">
+        <div class="hero" style="background:${theme.grad}">
+          <p class="symbol">${r.trading_symbol}</p>
+          <p class="expiry">Expiry ${r.expiry}</p>
+          <p class="ltp">₹${d.last_price}</p>
+          <p class="change" style="color:#fff">${arrow} ${up ? "+" : ""}${d.net_change}</p>
+        </div>
+        <div class="stats" style="background:${theme.light}">
+          <div class="stat"><span>Open</span><b>${d.ohlc.open}</b></div>
+          <div class="stat"><span>High</span><b>${d.ohlc.high}</b></div>
+          <div class="stat"><span>Low</span><b>${d.ohlc.low}</b></div>
+          <div class="stat"><span>Close</span><b>${d.ohlc.close}</b></div>
+          <div class="stat"><span>Volume</span><b>${d.volume}</b></div>
+          <div class="stat"><span>OI</span><b>${d.oi}</b></div>
+          <div class="stat"><span>Avg Price</span><b>${d.average_price}</b></div>
+          <div class="stat"><span>Lower Ckt</span><b>${d.lower_circuit_limit}</b></div>
+          <div class="stat"><span>Upper Ckt</span><b>${d.upper_circuit_limit}</b></div>
+        </div>
         <p class="time">Updated: ${d.timestamp}</p>
       </div>`;
-  }
+  });
 
   return `<!DOCTYPE html>
 <html>
@@ -37,27 +60,41 @@ function renderHTML(results) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Kumar Commodity Options</title>
 <style>
-  body { font-family: -apple-system, Roboto, sans-serif; background:#0f1115; color:#eee; margin:0; padding:16px; }
-  h1 { font-size:20px; margin-bottom:4px; }
-  .refresh { font-size:13px; color:#9ab; margin-bottom:16px; display:block; }
-  .card { background:#1a1d24; border-radius:12px; padding:16px; margin-bottom:16px; }
-  .card h2 { margin:0 0 4px 0; font-size:18px; }
-  .symbol { color:#9aa; font-size:13px; margin:0 0 8px 0; }
-  .ltp { font-size:26px; font-weight:bold; margin:0 0 12px 0; }
-  .green { color:#3ecf5e; font-size:16px; }
-  .red { color:#ff5c5c; font-size:16px; }
-  table { width:100%; border-collapse:collapse; font-size:14px; }
-  td { padding:6px 4px; border-bottom:1px solid #2a2d34; }
-  td:nth-child(1), td:nth-child(3) { color:#9aa; width:25%; }
-  .time { font-size:11px; color:#667; margin-top:10px; }
-  .err { color:#ff5c5c; }
-  a.login { display:inline-block; margin-top:8px; color:#6cf; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, Roboto, sans-serif; background:#f5f6fa; color:#222; margin:0; padding:16px; }
+  h1 { font-size:22px; margin:0 0 4px 0; background:linear-gradient(90deg,#6a11cb,#2575fc); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .refresh { font-size:13px; color:#2575fc; text-decoration:none; display:inline-block; margin-bottom:16px; }
+  .tabs { display:flex; gap:8px; margin-bottom:16px; }
+  .tab { flex:1; border:none; padding:12px 0; border-radius:12px; color:#fff; font-weight:bold; font-size:15px; opacity:0.5; }
+  .tab.active { opacity:1; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+  .panel { display:none; }
+  .panel.active { display:block; }
+  .hero { border-radius:16px; padding:20px; color:#fff; margin-bottom:0; }
+  .symbol { margin:0; font-size:14px; opacity:0.9; }
+  .expiry { margin:2px 0 10px 0; font-size:12px; opacity:0.8; }
+  .ltp { margin:0; font-size:34px; font-weight:bold; }
+  .change { margin:4px 0 0 0; font-size:16px; font-weight:bold; }
+  .stats { border-radius:0 0 16px 16px; padding:12px 16px; display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:8px; }
+  .stat { display:flex; flex-direction:column; background:#fff; border-radius:10px; padding:8px 10px; }
+  .stat span { font-size:11px; color:#888; }
+  .stat b { font-size:16px; color:#222; }
+  .time { font-size:11px; color:#999; text-align:right; }
+  .err { color:#e0263f; padding:20px; background:#fff; border-radius:12px; }
 </style>
 </head>
 <body>
   <h1>Kumar Commodity Options</h1>
-  <a class="refresh login" href="/login">🔑 Refresh login (do this each morning)</a>
-  ${cards}
+  <a class="refresh" href="/login">🔑 Refresh login (do this each morning)</a>
+  <div class="tabs">${tabButtons}</div>
+  ${panels}
+  <script>
+    function showTab(q) {
+      document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+      document.getElementById('btn-' + q).classList.add('active');
+      document.getElementById('panel-' + q).classList.add('active');
+    }
+  </script>
 </body>
 </html>`;
 }
@@ -99,7 +136,6 @@ export default {
       }
 
       if (url.pathname === "/json") {
-        // raw JSON still available for debugging at /json
         let token = await env.COMMODITY_KV.get("access_token");
         if (!token) token = env.UPSTOX_ACCESS_TOKEN;
         if (!token) return new Response('No token. Visit /login', { status: 400 });
